@@ -11,8 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // user : bistro-admin
-//pass : UL6YdiMwgcFPPh6S
-
+//pass : XKCDAetoXDk5D5ia
 
 
 
@@ -36,7 +35,7 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const bistroUserCollection = client.db('bistroDB').collection('users');
-    const menuCollection = client.db('bistroDB').collection('menu');
+    const bistroMenuCollection = client.db('bistroDB').collection('menu');
     const reviewCollection = client.db('bistroDB').collection('reviews');
     const cartsCollection = client.db('bistroDB').collection('carts');
 
@@ -44,7 +43,7 @@ async function run() {
     // jwt related api
     app.post('/jwt', async(req, res)=>{
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: '1h'
     })
@@ -135,7 +134,7 @@ async function run() {
       // }
       const query = { email: email }
       const user = await bistroUserCollection.findOne(query);
-      console.log(user);
+      // console.log(user);
       let admin = false;
       if(user){
         admin = user?.role == "Admin";
@@ -172,13 +171,37 @@ async function run() {
 
 
     app.get('/menu', async (req,res)=>{
-        const result = await menuCollection.find().toArray();
+        const result = await bistroMenuCollection.find().toArray();
         res.send(result);
     })
+    app.get('/menu/:id', async(req, res)=>{
+      const id = req.params.id;
+      console.log('Get', id);
+      const query = {_id : new ObjectId(id)};
+      const result = await bistroMenuCollection.findOne(query);
+      res.send(result);
+    } )
+
+    app.post('/menu', async(req, res)=>{
+      const item = req.body;
+      const result = await bistroMenuCollection.insertOne(item);
+      res.send(result);
+    } )
+    app.delete('/menu/:id', async(req, res)=>{
+      const id = req.params.id;
+      console.log(id);
+      const query = {_id : new ObjectId(id)};
+      const result = await bistroMenuCollection.deleteOne(query);
+      console.log(result);
+      res.send(result)
+    })
+
     app.get('/review', async (req,res)=>{
         const result = await reviewCollection.find().toArray();
         res.send(result);
     })
+
+    // app.post('/admin/addItem')
 
     // naming convention
     //=================================
